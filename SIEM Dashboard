@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIEM Dashboard - Security Alert Monitoring</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .alert {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .alert-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .alert-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .alert-title {
+            font-weight: bold;
+        }
+        .alert-time {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .summary-item {
+            text-align: center;
+        }
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .incident-procedure {
+            margin-top: 20px;
+            display: none;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SIEM Dashboard</h1>
+        <div id="alertList" class="alert-list"></div>
+
+        <div class="summary">
+            <div class="summary-item">
+                <div class="summary-value" id="criticalCount">0</div>
+                <div>Critical Alerts</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="highCount">0</div>
+                <div>High Alerts</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="mediumCount">0</div>
+                <div>Medium Alerts</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="lowCount">0</div>
+                <div>Low Alerts</div>
+            </div>
+        </div>
+        <h2>Incident Response Procedure</h2>
+        <button onclick="showProcedure('critical')">Critical Alert Procedure</button>
+        <button onclick="showProcedure('high')">High Alert Procedure</button>
+        <button onclick="showProcedure('medium')">Medium Alert Procedure</button>
+        <button onclick="showProcedure('low')">Low Alert Procedure</button>
+        <div id="incidentProcedure" class="incident-procedure">
+            <h3 id="procedureTitle"></h3>
+            <div id="procedureSteps"></div>
+        </div>
+    </div>
+    <script>
+        const alerts = [];
+        function addAlert(alert) {
+            alert.id = 'alert-' + Date.now();
+            alert.time = new Date().toLocaleTimeString();
+            alerts.unshift(alert);
+            updateAlertsDisplay();
+        }
+        function updateAlertsDisplay() {
+            const alertList = document.getElementById('alertList');
+            alertList.innerHTML = '';
+            const counts = {
+                critical: 0,
+                high: 0,
+                medium: 0,
+                low: 0
+            };
+            alerts.forEach(alert => {
+                counts[alert.severity]++;
+                const alertItem = document.createElement('li');
+                alertItem.className = 'alert-item ' + (alert.severity === 'critical' ? 'alert-danger' : 
+                                                         alert.severity === 'high' ? 'alert-warning' : 
+                                                         alert.severity === 'medium' ? 'alert-info' : 
+                                                         'alert-success');
+                alertItem.innerHTML = `
+                    <div>
+                        <div class="alert-title">${alert.title}</div>
+                        <div>${alert.message}</div>
+                    </div>
+                    <div class="alert-time">${alert.time}</div>
+                `;
+                alertList.appendChild(alertItem);
+            });
+            document.getElementById('criticalCount').textContent = counts.critical;
+            document.getElementById('highCount').textContent = counts.high;
+            document.getElementById('mediumCount').textContent = counts.medium;
+            document.getElementById('lowCount').textContent = counts.low;
+        }
+        function showProcedure(severity) {
+            const procedureDiv = document.getElementById('incidentProcedure');
+            const titleDiv = document.getElementById('procedureTitle');
+            const stepsDiv = document.getElementById('procedureSteps');
+            procedureDiv.style.display = 'block';
+            const procedures = {
+                critical: {
+                    title: 'Critical Severity Incident Response',
+                    steps: [
+                        '1. Immediately notify the security incident response team.',
+                        '2. Isolate affected systems to prevent further damage.',
+                        '3. Begin forensic data collection (logs, memory dumps, etc.).',
+                        '4. Activate business continuity plan if necessary.',
+                        '5. Engage legal and PR teams for potential breach notification.',
+                        '6. Conduct root cause analysis after containment.',
+                        '7. Implement corrective measures to prevent recurrence.'
+                    ]
+                },
+                high: {
+                    title: 'High Severity Incident Response',
+                    steps: [
+                        '1. Notify the security team immediately.',
+                        '2. Assess scope and impact of the incident.',
+                        '3. Implement temporary mitigations to reduce risk.',
+                        '4. Preserve evidence for investigation.',
+                        '5. Schedule remediation within 24 hours.',
+                        '6. Conduct vulnerability assessment to find related issues.',
+                        '7. Document lessons learned.'
+                    ]
+                },
+                medium: {
+                    title: 'Medium Severity Incident Response',
+                    steps: [
+                        '1. Create incident ticket and assign to security team.',
+                        '2. Investigate and verify the alert.',
+                        '3. Schedule remediation within 72 hours.',
+                        '4. Identify similar patterns in applications/logs.',
+                        '5. Update monitoring rules to better detect similar events.',
+                        '6. Document actions taken.'
+                    ]
+                },
+                low: {
+                    title: 'Low Severity Incident Response',
+                    steps: [
+                        '1. Log the incident in tracking system.',
+                        '2. Verify if this is part of a larger pattern.',
+                        '3. Schedule remediation during next maintenance window.',
+                        '4. Consider if this requires policy or procedure updates.',
+                        '5. Close ticket after remediation.'
+                    ]
+                }
+            };
+            const procedure = procedures[severity];
+            titleDiv.textContent = procedure.title;
+            stepsDiv.innerHTML = procedure.steps.map(step => <p>${step}</p>).join('');
+        }
+        addAlert({
+            severity: 'critical',
+            title: 'SQL Injection Attempt Detected',
+            message: 'Possible SQL injection attempt at login form.'
+        });
+        addAlert({
+            severity: 'high',
+            title: 'XSS Attempt Detected',
+            message: 'Possible XSS attempt in comment section.'
+        });
+        addAlert({
+            severity: 'medium',
+            title: 'Failed Login Attempt',
+            message: 'Failed login attempt with username: user123.'
+        });
+        addAlert({
+            severity: 'low',
+            title: 'Configuration Change Detected',
+            message: 'Application settings modified by user admin.'
+        });
+    </script>
+</body>
+</html>
